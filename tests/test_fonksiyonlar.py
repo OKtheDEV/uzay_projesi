@@ -35,3 +35,30 @@ def test_galaksi_kur():
     # baslangic listede yoksa ValueError vermeli
     with pytest.raises(ValueError):
         galaksi_kur(["mars"], {"mars": []}, "jupiter")
+
+from uzay_oyunu.araclar import hamle_sayaci, en_bagli_gezegenler
+
+def test_hamle_sayaci():
+    say = hamle_sayaci()
+    assert say() == 1
+    assert say() == 2
+    assert say() == 3
+
+    # Yeni sayac birbirinden bagimsiz calismali
+    yeni_say = hamle_sayaci()
+    assert yeni_say() == 1
+
+def test_en_bagli_gezegenler():
+    galaksi = {
+        "gezegenler": ["dünya", "mars", "centauri", "sirius"],
+        "baglantilar": {
+            "dünya": ["mars", "centauri"],  # 2 baglanti
+            "mars": ["dünya"],  # 1 baglanti
+            "centauri": ["dünya", "sirius"],  # 2 baglanti
+            "sirius": ["centauri"],  # 1 baglanti
+        },
+    }
+    # 2 baglantisi olanlar: centauri, dünya (alfabetik)
+    # 1 baglantisi olanlar: mars, sirius (alfabetik)
+    beklenen = ["centauri", "dünya", "mars", "sirius"]
+    assert en_bagli_gezegenler(galaksi) == beklenen
