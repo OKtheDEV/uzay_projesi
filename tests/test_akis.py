@@ -48,3 +48,34 @@ def test_travel_yakit_bitisi():
     travel(galaksi, tuketim=10)
     sonuc = travel(galaksi, tuketim=10)
     assert "Yakıtın bitti, uzayda sürükleniyorsun…" in sonuc
+
+from uzay_oyunu.akis import ayristir, satirlari_oku, uzun_yolculuklar
+
+def test_seyir_defteri_boru_hatti(tmp_path):
+    # Geçici bir seyir dosyası oluşturarak izole test yapalım
+    test_veri = (
+        "dünya -> sirius 12\n"
+        "sirius -> orion 8\n"
+        "orion -> centauri 15\n"
+        "# bakım molası\n"
+        "centauri -> orion 15\n"
+        "orion -> sirius 8\n"
+        "sirius -> kara_delik 30\n"
+    )
+    dosya = tmp_path / "seyir.txt"
+    dosya.write_text(test_veri, encoding="utf-8")
+
+    # 1. Toplam yakıt kontrolü (Görselde: sum(...) == 88)
+    toplam_yakit = sum(y for _, _, y in ayristir(satirlari_oku(str(dosya))))
+    assert toplam_yakit == 88
+
+    # 2. uzun_yolculuklar filtresi (esik=10) kontrolü
+    # Beklenen hedefler: ['sirius', 'centauri', 'orion', 'kara_delik']
+    kayitlar = ayristir(satirlari_oku(str(dosya)))
+    hedefler = [h for _, h, _ in uzun_yolculuklar(kayitlar, 10)]
+    assert hedefler == ["sirius", "centauri", "orion", "kara_delik"]
+
+    # 3. Yorum ve boş satır atlama kontrolü
+    satirlar = list(satirlari_oku(str(dosya)))
+    assert len(satirlar) == 6
+    assert not any(s.startswith("#") for s in satirlar)
