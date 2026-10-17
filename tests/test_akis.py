@@ -116,3 +116,16 @@ def test_rota_sayaci():
     # lru_cache devrede mi kontrolü
     info = say_ucgen.cache_info()
     assert info.hits > 0
+
+from uzay_oyunu.akis import tik_tak_calistir, zamanlayici
+
+def test_zamanlayici_ve_tik_tak():
+    # 0.1 saniyelik zamanlayıcı testi
+    z = zamanlayici(0.05)
+    t1 = next(z)
+    t2 = next(z)
+    assert t2 > t1
+
+    # Kısa bir simülasyon (örneğin 0.01 saniye) ile fonksiyonun çalıştığını doğrulama
+    sonuc = tik_tak_calistir(toplam_sure=0.01)
+    assert isinstance(sonuc, list)

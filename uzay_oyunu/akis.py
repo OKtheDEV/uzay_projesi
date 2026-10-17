@@ -2,6 +2,7 @@ from collections.abc import Iterator
 from collections.abc import Iterable, Iterator
 from collections.abc import Callable, Iterable, Iterator
 from functools import lru_cache
+import time
 
 def fibonacci() -> Iterator[int]:
     """Sonsuz Fibonacci dizisi elemanlarını sırasıyla üreten bir üreteç (generator).
@@ -98,3 +99,50 @@ def rota_sayaci(baglantilar: dict[str, list[str]]) -> Callable[[str, int], int]:
         return sum(rota_sayisi(komsu, adim - 1) for komsu in komsular)
 
     return rota_sayisi
+
+def zamanlayici(aralik: float) -> Iterator[float]:
+    """Belirli periyotlarla tetiklenen zamanlayıcı üreteci.
+
+    Args:
+        aralik (float): Tetiklenme aralığı (saniye).
+
+    Yields:
+        float: Tetiklenme anındaki zaman damgası.
+    """
+    hedef = time.perf_counter() + aralik
+    while True:
+        if time.perf_counter() >= hedef:
+            yield hedef
+            hedef += aralik
+
+def tik_tak_calistir(toplam_sure: float = 10.0) -> list[str]:
+    """10 saniye boyunca 2 saniyede bir 'tik', 5 saniyede bir 'tak' üretir.
+
+    AÇIKLAMA (Meşgul Bekleme vs time.sleep):
+    - Meşgul Bekleme (Busy Waiting): Döngü sürekli CPU'yu meşgul ederek
+      koşulun sağlanıp sağlanmadığını aralıksız sorgular. CPU kullanımı %100'e fırlar
+      ve enerji/kaynak israfına yol açar.
+    - time.sleep(): İş parçacığını uyku durumuna alarak CPU kullanımını askıya alır;
+      işletim sistemi diğer süreçleri çalıştırabilir, kaynak tasarrufu sağlar.
+    """
+    t_tik = zamanlayici(2.0)
+    t_tak = zamanlayici(5.0)
+
+    baslangic = time.perf_counter()
+    olaylar: list[str] = []
+
+    sonraki_tik = time.perf_counter() + 2.0
+    sonraki_tak = time.perf_counter() + 5.0
+
+    while time.perf_counter() - baslangic < toplam_sure:
+        su_an = time.perf_counter()
+        if su_an >= sonraki_tik:
+            print("tik")
+            olaylar.append("tik")
+            sonraki_tik += 2.0
+        if su_an >= sonraki_tak:
+            print("tak")
+            olaylar.append("tak")
+            sonraki_tak += 5.0
+
+    return olaylar
