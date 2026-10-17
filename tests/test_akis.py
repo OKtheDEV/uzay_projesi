@@ -79,3 +79,40 @@ def test_seyir_defteri_boru_hatti(tmp_path):
     satirlar = list(satirlari_oku(str(dosya)))
     assert len(satirlar) == 6
     assert not any(s.startswith("#") for s in satirlar)
+
+from uzay_oyunu.akis import rota_sayaci
+
+def test_rota_sayaci():
+    # Basit bir galaksi grafı kuralım:
+    # A <-> B (birbirine bağlı iki gezegen)
+    baglantilar = {
+        "A": ["B"],
+        "B": ["A"],
+    }
+    say = rota_sayaci(baglantilar)
+
+    # 0 adımda sadece olduğu yerde durur: 1
+    assert say("A", 0) == 1
+    # 1 adımda A -> B: 1
+    assert say("A", 1) == 1
+    # 2 adımda A -> B -> A: 1
+    assert say("A", 2) == 1
+
+    # Üçgen bağlantı:
+    # Dunya -> [Mars, Venus], Mars -> [Dunya], Venus -> [Dunya]
+    ucgen_baglanti = {
+        "Dunya": ["Mars", "Venus"],
+        "Mars": ["Dunya"],
+        "Venus": ["Dunya"],
+    }
+    say_ucgen = rota_sayaci(ucgen_baglanti)
+    # 1 adım: Dunya -> Mars, Dunya -> Venus (2)
+    assert say_ucgen("Dunya", 1) == 2
+    # 2 adım: Dunya -> Mars -> Dunya, Dunya -> Venus -> Dunya (2)
+    assert say_ucgen("Dunya", 2) == 2
+    # 3 adım: 4 rota
+    assert say_ucgen("Dunya", 3) == 4
+
+    # lru_cache devrede mi kontrolü
+    info = say_ucgen.cache_info()
+    assert info.hits > 0

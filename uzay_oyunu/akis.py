@@ -1,5 +1,7 @@
 from collections.abc import Iterator
 from collections.abc import Iterable, Iterator
+from collections.abc import Callable, Iterable, Iterator
+from functools import lru_cache
 
 def fibonacci() -> Iterator[int]:
     """Sonsuz Fibonacci dizisi elemanlarını sırasıyla üreten bir üreteç (generator).
@@ -75,3 +77,24 @@ def uzun_yolculuklar(
     for kayit in kayitlar:
         if kayit[2] > esik:
             yield kayit
+
+def rota_sayaci(baglantilar: dict[str, list[str]]) -> Callable[[str, int], int]:
+    """Verilen gezegen bağlantı haritasına göre önbellekli bir rota sayacı döndürür.
+
+    Args:
+        baglantilar (dict[str, list[str]]): Gezegenlerin komşuluk listesini içeren sözlük.
+
+    Returns:
+        Callable[[str, int], int]: (gezegen, adim) alıp toplam rota sayısını döndüren fonksiyon.
+    """
+
+    @lru_cache(maxsize=None)
+    def rota_sayisi(gezegen: str, adim: int) -> int:
+        """Verilen gezegenden başlayıp tam adim kadar süren farklı rotaların sayısını hesaplar."""
+        if adim == 0:
+            return 1
+
+        komsular = baglantilar.get(gezegen, [])
+        return sum(rota_sayisi(komsu, adim - 1) for komsu in komsular)
+
+    return rota_sayisi
