@@ -73,3 +73,69 @@ def test_log_cagri_meta_veri_korunuyor():
 
     assert ornek.__name__ == "ornek"
     assert ornek.__doc__ == "Log test dokümantasyonu."
+
+from unittest.mock import patch
+import pytest
+from uzay_oyunu.komutlar import KOMUTLAR, envanter, harita, komut, yardim
+from uzay_oyunu.oyun import travel
+
+def test_komut_kayit_deseni_ve_value_error():
+    @komut("ozel_komut", "Özel bir açıklama")
+    def ornek(durum):
+        return "çalıştı"
+
+    assert "ozel_komut" in KOMUTLAR
+    assert KOMUTLAR["ozel_komut"][1] == "Özel bir açıklama"
+
+    # Aynı adla tekrar kaydedilmek istenirse ValueError fırlatmalı
+    with pytest.raises(ValueError):
+
+        @komut("ozel_komut", "Yinelenen komut")
+        def ayni_ad(durum):
+            pass
+
+def test_komut_yardim():
+    durum = {}
+    cikti = yardim(durum)
+    assert "yardim" in cikti
+    assert "envanter" in cikti
+    assert "harita" in cikti
+
+
+def test_komut_envanter():
+    durum = {"credits": True, "engines": True, "copilot": False}
+    cikti = envanter(durum)
+    assert "bol kredi" in cikti
+    assert "guclu motorlar" in cikti
+    assert "yetenekli bir pilot" not in cikti
+
+
+def test_komut_harita():
+    durum = {
+        "konum": "dünya",
+        "baglantilar": {"dünya": ["mars", "kara_delik"]},
+    }
+    cikti = harita(durum)
+    assert "mars, kara_delik" in cikti
+
+
+def test_travel_komut_calistirip_menuyu_tekrar_gosterir(capsys):
+    galaksi = {
+        "konum": "dünya",
+        "baglantilar": {"dünya": ["mars"]},
+        "yakit": 50,
+        "credits": True,
+        "engines": False,
+        "copilot": False,
+    }
+
+    # Kullanıcı önce 'harita' komutunu girsin, ardından '1' seçeneğiyle çıksın
+    girdiler = iter(["harita", "1"])
+    with patch("builtins.input", lambda _: next(girdiler)):
+        travel(galaksi)
+
+    yakalanan = capsys.readouterr().out
+    # 'harita' komutunun sonucunu ekrana basmış olmalı
+    assert "mars" in yakalanan
+    # Menüyü tekrar gösterdiği için 'Nereye gitmek istersin?' birden fazla kez basılmış olmalı
+    assert yakalanan.count("Nereye gitmek istersin?") >= 2
