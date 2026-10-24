@@ -76,3 +76,40 @@ def log_cagri(fonk):
         return sonuc
 
     return sarmalayici
+
+def sinirla(alt: int | float, ust: int | float):
+    """Dekore edilen fonksiyonun ilk argümanının [alt, ust] aralığında olmasını zorunlu kılan dekoratör."""
+
+    def dekorator(fonk):
+        @functools.wraps(fonk)
+        def sarmalayici(*args, **kwargs):
+            # İlk argümanı konumsal veya adlı (keyword) argümanlardan alıyoruz
+            if args:
+                deger = args[0]
+            elif kwargs:
+                deger = next(iter(kwargs.values()))
+            else:
+                raise ValueError(
+                    f"{fonk.__name__}: Argüman bulunamadı."
+                )  # Boş çağrı kontrolü
+
+            if not (alt <= deger <= ust):
+                raise ValueError(
+                    f"{fonk.__name__}: {deger} değeri {alt}-{ust} aralığında değil"
+                )
+
+            return fonk(*args, **kwargs)
+
+        return sarmalayici
+
+    return dekorator
+
+# Başlangıç yakıtı 100 kabul edilerek:
+MEVCUT_YAKIT = 100
+
+@sinirla(0, 100)
+def yakit_harca(miktar: int) -> int:
+    """Verilen miktar kadar yakıt harcar ve kalan yakıtı döner."""
+    global MEVCUT_YAKIT
+    MEVCUT_YAKIT -= miktar
+    return MEVCUT_YAKIT

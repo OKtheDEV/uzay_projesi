@@ -139,3 +139,49 @@ def test_travel_komut_calistirip_menuyu_tekrar_gosterir(capsys):
     assert "mars" in yakalanan
     # Menüyü tekrar gösterdiği için 'Nereye gitmek istersin?' birden fazla kez basılmış olmalı
     assert yakalanan.count("Nereye gitmek istersin?") >= 2
+
+import pytest
+from uzay_oyunu.dekoratorler import sinirla
+
+def test_sinirla_sinir_degerleri_0_ve_100():
+    @sinirla(0, 100)
+    def harca(miktar):
+        return 100 - miktar
+
+    # Alt sınır: 0
+    assert harca(0) == 100
+    # Üst sınır: 100
+    assert harca(100) == 0
+    # Aralık içi değer: 30
+    assert harca(30) == 70
+
+def test_sinirla_aralik_disi_alt_deger_hata():
+    @sinirla(0, 100)
+    def harca(miktar):
+        return 100 - miktar
+
+    # Alt sınırın altı: -1
+    with pytest.raises(
+        ValueError, match="harca: -1 değeri 0-100 aralığında değil"
+    ):
+        harca(-1)
+
+def test_sinirla_aralik_disi_ust_deger_hata():
+    @sinirla(0, 100)
+    def harca(miktar):
+        return 100 - miktar
+
+    # Üst sınırın üstü: 150
+    with pytest.raises(
+        ValueError, match="harca: 150 değeri 0-100 aralığında değil"
+    ):
+        harca(150)
+
+def test_sinirla_meta_veri_korunuyor():
+    @sinirla(0, 50)
+    def ornek_fonk(x):
+        """Docstring metni."""
+        return x
+
+    assert ornek_fonk.__name__ == "ornek_fonk"
+    assert ornek_fonk.__doc__ == "Docstring metni."
