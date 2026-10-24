@@ -26,3 +26,26 @@ def test_sure_olc_meta_veri_korunuyor():
 
     assert ornek_fonksiyon.__name__ == "ornek_fonksiyon"
     assert ornek_fonksiyon.__doc__ == "Bu bir örnek dokümantasyon metnidir."
+
+from uzay_oyunu.dekoratorler import say
+
+def test_say_cagri_sayisi_artiyor():
+    @say
+    def selam(isim):
+        return f"Selam {isim}"
+
+    assert selam.cagri == 0
+    selam("Ali")
+    assert selam.cagri == 1
+    selam("Ayşe")
+    assert selam.cagri == 2
+
+
+def test_say_meta_veri_korunuyor():
+    @say
+    def ornek():
+        """Doküman metni."""
+        pass
+
+    assert ornek.__name__ == "ornek"
+    assert ornek.__doc__ == "Doküman metni."

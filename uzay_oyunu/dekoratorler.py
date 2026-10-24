@@ -42,3 +42,14 @@ if __name__ == "__main__":
     print(
         f"{baslangic_gezegeni} gezegeninden 20 adımlık rota sayısı: {toplam_rota}"
     )
+
+def say(fonk):
+    """Fonksiyonun çağrı sayısını bir nitelikte (.cagri) tutan dekoratör."""
+
+    @functools.wraps(fonk)
+    def sarmalayici(*args, **kwargs):
+        sarmalayici.cagri += 1
+        return fonk(*args, **kwargs)
+
+    sarmalayici.cagri = 0
+    return sarmalayici
