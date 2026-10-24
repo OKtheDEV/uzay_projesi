@@ -185,3 +185,62 @@ def test_sinirla_meta_veri_korunuyor():
 
     assert ornek_fonk.__name__ == "ornek_fonk"
     assert ornek_fonk.__doc__ == "Docstring metni."
+
+from functools import lru_cache
+from uzay_oyunu.dekoratorler import hafiza
+
+def test_hafiza_lru_cache_ile_karsilastirma():
+    # 1. Kendi hafiza dekoratörümüzle Fibonacci
+    cagri_hafiza = 0
+
+    @hafiza(maxsize=None)
+    def fib_hafiza(n):
+        nonlocal cagri_hafiza
+        cagri_hafiza += 1
+        if n <= 1:
+            return n
+        return fib_hafiza(n - 1) + fib_hafiza(n - 2)
+
+    # 2. Standart functools.lru_cache ile Fibonacci
+    cagri_lru = 0
+
+    @lru_cache(maxsize=None)
+    def fib_lru(n):
+        nonlocal cagri_lru
+        cagri_lru += 1
+        if n <= 1:
+            return n
+        return fib_lru(n - 1) + fib_lru(n - 2)
+
+    # Sonuçlar ve çağrı sayıları birebir aynı olmalı
+    sonuc_hafiza = [fib_hafiza(i) for i in range(15)]
+    sonuc_lru = [fib_lru(i) for i in range(15)]
+
+    assert sonuc_hafiza == sonuc_lru
+    assert cagri_hafiza == cagri_lru
+
+def test_hafiza_maxsize_en_eskiyi_siler():
+    hesaplananlar = []
+
+    @hafiza(maxsize=2)
+    def carp_iki(x):
+        hesaplananlar.append(x)
+        return x * 2
+
+    # 1 ve 2 eklenir (kapasite doldu)
+    assert carp_iki(1) == 2
+    assert carp_iki(2) == 4
+    assert len(carp_iki.cache) == 2
+
+    # 3 eklenince en eski girdi olan 1 silinmeli
+    assert carp_iki(3) == 6
+    assert len(carp_iki.cache) == 2
+    assert ( (1,), () ) not in carp_iki.cache
+
+    # 2 hala önbellekte olduğu için tekrar hesaplanmamalı
+    carp_iki(2)
+    assert hesaplananlar == [1, 2, 3]
+
+    # 1 tekrar çağrılırsa önbellekten silindiği için baştan hesaplanmalı
+    carp_iki(1)
+    assert hesaplananlar == [1, 2, 3, 1]

@@ -113,3 +113,35 @@ def yakit_harca(miktar: int) -> int:
     global MEVCUT_YAKIT
     MEVCUT_YAKIT -= miktar
     return MEVCUT_YAKIT
+
+def hafiza(maxsize: int | None = None):
+    """functools.lru_cache kullanmadan, closure içindeki sözlükle çalışan önbellek dekoratörü."""
+
+    def dekorator(fonk):
+        onbellek: dict = {}
+
+        @functools.wraps(fonk)
+        def sarmalayici(*args, **kwargs):
+            # Sözlük anahtarı için argümanları hash'lenebilir bir demete dönüştürüyoruz
+            anahtar = (args, tuple(sorted(kwargs.items())))
+
+            if anahtar in onbellek:
+                return onbellek[anahtar]
+
+            sonuc = fonk(*args, **kwargs)
+
+            # Eğer maxsize sınırı varsa ve önbellek kapasiteye ulaştıysa en eski girdiyi sil
+            if maxsize is not None and len(onbellek) >= maxsize and maxsize > 0:
+                en_eski_anahtar = next(iter(onbellek))
+                onbellek.pop(en_eski_anahtar)
+
+            if maxsize is None or maxsize > 0:
+                onbellek[anahtar] = sonuc
+
+            return sonuc
+
+        # Testlerde ve hata ayıklamada inceleyebilmek için önbelleğe erişim niteliği
+        sarmalayici.cache = onbellek
+        return sarmalayici
+
+    return dekorator
