@@ -53,3 +53,26 @@ def say(fonk):
 
     sarmalayici.cagri = 0
     return sarmalayici
+
+def log_cagri(fonk):
+    """Fonksiyon adını, argümanlarını ve dönüş değerini yazdıran loglama dekoratörü."""
+
+    @functools.wraps(fonk)
+    def sarmalayici(*args, **kwargs):
+        # Konumsal ve adlı argümanların string temsillerini hazırlıyoruz
+        arg_parcalari = [repr(arg) for arg in args]
+        kwarg_parcalari = [f"{k}={repr(v)}" for k, v in kwargs.items()]
+        tum_argumanlar = ", ".join(arg_parcalari + kwarg_parcalari)
+
+        # Çağrı öncesi log
+        print(f"-> {fonk.__name__}({tum_argumanlar})")
+
+        # Fonksiyonu çalıştır
+        sonuc = fonk(*args, **kwargs)
+
+        # Çağrı sonrası log
+        print(f"<- {fonk.__name__} = {repr(sonuc)}")
+
+        return sonuc
+
+    return sarmalayici

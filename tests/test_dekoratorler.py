@@ -49,3 +49,27 @@ def test_say_meta_veri_korunuyor():
 
     assert ornek.__name__ == "ornek"
     assert ornek.__doc__ == "Doküman metni."
+
+from uzay_oyunu.dekoratorler import log_cagri
+
+def test_log_cagri_calisiyor_ve_yazdiriyor(capsys):
+    @log_cagri
+    def yolculuk(hedef, hiz=1):
+        return f"{hedef} hiz={hiz}"
+
+    sonuc = yolculuk("orion", hiz=3)
+    assert sonuc == "orion hiz=3"
+
+    yakalanan = capsys.readouterr().out
+    assert "-> yolculuk('orion', hiz=3)" in yakalanan
+    assert "<- yolculuk = 'orion hiz=3'" in yakalanan
+
+
+def test_log_cagri_meta_veri_korunuyor():
+    @log_cagri
+    def ornek():
+        """Log test dokümantasyonu."""
+        pass
+
+    assert ornek.__name__ == "ornek"
+    assert ornek.__doc__ == "Log test dokümantasyonu."

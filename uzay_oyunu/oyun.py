@@ -1,5 +1,6 @@
 import json
 from uzay_oyunu.akis import yakit_gostergesi
+from uzay_oyunu.dekoratorler import log_cagri
 
 def envanter_metni(credits: bool, engines: bool, copilot: bool) -> str:
     """Envanter durumuna gore uygun aciklama metnini dondurur."""
@@ -15,7 +16,7 @@ def envanter_metni(credits: bool, engines: bool, copilot: bool) -> str:
         return ""
     return f"Sende: {', '.join(ogeler)}"
 
-
+@log_cagri
 def hedef_menusu(hedefler: list[str]) -> str:
     """Gidilebilecek hedefleri numaralandirilmis liste metni olarak dondurur."""
     satirlar = ["Nereye gitmek istersin?"]
@@ -23,7 +24,7 @@ def hedef_menusu(hedefler: list[str]) -> str:
         satirlar.append(f"[{sira}] {hedef}")
     return "\n".join(satirlar)
 
-
+@log_cagri
 def galaksi_kur(
     gezegenler: list[str],
     baglantilar: dict[str, list[str]],
